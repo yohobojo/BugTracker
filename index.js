@@ -1,13 +1,17 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 app.use(express.json());
+app.use(cors({ origin: '*' }));
 const port = 5500;
+
+// courses = [{ id: 1, name: 'test' }];
 
 const mysql = require('mysql');
 const connection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '********************',
+  password: 'yohoDB123!',
   database: 'sys',
 });
 
@@ -20,9 +24,9 @@ connection.connect((error) => {
 app.listen(port, () => console.log(`Listening on port ${port}...`));
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  //   res.send(courses);
   connection.query('SELECT * FROM bugs', (err, result) => {
-    console.log(result);
+    res.send(result);
   });
 });
 
