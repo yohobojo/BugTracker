@@ -8,9 +8,27 @@ $('#userBtn').click(function (e) {
   window.location = 'userHome.html';
 });
 
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = e.target[0].value;
+  const password = e.target[0].value;
+  data = { name: username, password: password };
+  const url = 'http://localhost:5500/newUser';
+  const response = await fetch(url, {
+    method: 'POST',
+    mode: 'cors',
+    headers: {
+      'Content-Type': application / json,
+    },
+    body: JSON.stringify(data),
+  }).then((data) => {
+    console.log(data);
+  });
+});
+
 async function getData() {
   const bugTable = document.getElementById('bugTable');
-  const url = 'http://localhost:5500/';
+  const url = 'http://localhost:5500/userHome';
   const response = await fetch(url, { method: 'GET', mode: 'cors' })
     .then((response) => response.json())
     .then((responseJson) => {

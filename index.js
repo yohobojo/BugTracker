@@ -1,11 +1,15 @@
 const express = require('express');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
+
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 const port = 5500;
 
 // courses = [{ id: 1, name: 'test' }];
+
+const users = [];
 
 const mysql = require('mysql');
 const connection = mysql.createConnection({
@@ -21,18 +25,53 @@ connection.connect((error) => {
     throw error;
   }
 });
+
 app.listen(port, () => console.log(`Listening on port ${port}...`));
 
-app.get('/', (req, res) => {
-  //   res.send(courses);
+// app.get('/', (req, res) => {
+//   //   res.send(courses);
+//   connection.query('SELECT * FROM bugs', (err, result) => {
+//     res.send(result);
+//   });
+// });
+
+app.get('/userHome', (req, res) => {
+  console.log('here');
   connection.query('SELECT * FROM bugs', (err, result) => {
     res.send(result);
   });
 });
 
-app.get('/api', (req, res) => {
-  console.log('here');
-  res.send(courses);
+app.get('/users', (req, res) => {
+  res.json(users);
+});
+
+app.post('/newUser', async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const user = { name: req.body.name, password: hashedPassword };
+    users.push(user); //use db
+    connection.query('INSERT INTO users VALUES ' + user + ';');
+    res.status(201).send();
+  } catch (error) {
+    res.status(500).send();
+  }
+});
+
+app.post('/users/login', async (req, res) => {
+  const user = users.find((user) => user.name === req.body.name);
+  if (user == null) {
+    return res.status(400).send('Cannot find user');
+  }
+  try {
+    if (await bcrypt.compare(req.body.password, user.password)) {
+      res.send('Success');
+    } else {
+      res.send('Not Allowed');
+    }
+  } catch (error) {
+    res.status(500).send();
+  }
 });
 
 app.post('/api/courses', (req, res) => {
