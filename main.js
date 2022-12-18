@@ -1,4 +1,5 @@
-window.onload = getData;
+// window.onload = getData;
+
 $('#adminBtn').click(function (e) {
   e.preventDefault();
   window.location = 'adminHome.html';
@@ -7,28 +8,82 @@ $('#userBtn').click(function (e) {
   e.preventDefault();
   window.location = 'userHome.html';
 });
-
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const username = e.target[0].value;
-  const password = e.target[0].value;
-  data = { name: username, password: password };
-  const url = 'http://localhost:5500/newUser';
-  const response = await fetch(url, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': application / json,
-    },
-    body: JSON.stringify(data),
-  }).then((data) => {
-    console.log(data);
+if (document.getElementById('loginForm')) {
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = e.target[0].value;
+    const password = e.target[1].value;
+    loginData = { name: username, password: password };
+    const url = 'http://localhost:5500/users';
+    const response = await fetch(url, { method: 'GET', mode: 'cors' })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        return responseJson;
+      });
+    console.log(response);
+    var checkName = false;
+    for (let i = 0; i < response.length; i++) {
+      const data = response[i];
+      if (data.name === username) {
+        checkName = true;
+      }
+    }
+    if (checkName == false) {
+      createNewUser();
+    } else {
+      loginUser();
+    }
   });
-});
+
+  async function loginUser() {
+    const url = 'http://localhost:5500/users/login';
+    const response = await fetch(url, {
+      method: 'POST', // or 'PUT'
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginData),
+    })
+      .then((response) => response.text())
+      .then((data) => {
+        return data;
+      })
+      .catch((error) => {
+        return error;
+      });
+    console.log(response);
+    if (response === 'admin') {
+      window.location = 'adminHome.html';
+    } else if (response === 'user') {
+      window.location = 'userHome.html';
+    }
+  }
+
+  async function createNewUser() {
+    console.log(loginData);
+    console.log(JSON.stringify(loginData));
+    const url = 'http://localhost:5500/newUser';
+    fetch(url, {
+      method: 'POST', // or 'PUT'
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        return data;
+      })
+      .catch((error) => {
+        return error;
+      });
+  }
+}
 
 async function getData() {
+  console.log('hello world');
   const bugTable = document.getElementById('bugTable');
-  const url = 'http://localhost:5500/userHome';
+  const url = 'http://localhost:5500/bugs';
   const response = await fetch(url, { method: 'GET', mode: 'cors' })
     .then((response) => response.json())
     .then((responseJson) => {

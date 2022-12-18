@@ -4,12 +4,12 @@ const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: '*' }));
+app.use(cors());
 const port = 5500;
 
 // courses = [{ id: 1, name: 'test' }];
 
-const users = [];
+var users;
 
 const mysql = require('mysql');
 const connection = mysql.createConnection({
@@ -28,44 +28,70 @@ connection.connect((error) => {
 
 app.listen(port, () => console.log(`Listening on port ${port}...`));
 
-// app.get('/', (req, res) => {
-//   //   res.send(courses);
-//   connection.query('SELECT * FROM bugs', (err, result) => {
-//     res.send(result);
-//   });
-// });
+connection.query('SELECT * FROM users', (err, result) => {
+  users = result;
+});
+
+app.get('/bugs', (req, res) => {
+  //   res.send(courses);
+  connection.query('SELECT * FROM bugs', (err, result) => {
+    res.send(result);
+  });
+});
 
 app.get('/userHome', (req, res) => {
-  console.log('here');
   connection.query('SELECT * FROM bugs', (err, result) => {
     res.send(result);
   });
 });
 
 app.get('/users', (req, res) => {
-  res.json(users);
+  console.log('here');
+  connection.query('SELECT name FROM users', (err, result) => {
+    res.send(result);
+    // users.push(result);
+  });
 });
 
 app.post('/newUser', async (req, res) => {
   try {
+    console.log(req.body);
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const user = { name: req.body.name, password: hashedPassword };
-    users.push(user); //use db
-    connection.query('INSERT INTO users VALUES ' + user + ';');
-    res.status(201).send();
+    connection.query(
+      'INSERT INTO users VALUES ("' +
+        user.name +
+        '","' +
+        user.password +
+        '","user");'
+    );
+    res.status(201).send('code 201');
   } catch (error) {
-    res.status(500).send();
+    res.status(500).send('code 500');
   }
 });
 
 app.post('/users/login', async (req, res) => {
-  const user = users.find((user) => user.name === req.body.name);
+  console.log(users);
+  //   const user = users.find((user) => user.name === req.body.name);
+  var user;
+  for (let i = 0; i < users.length; i++) {
+    const data = users[i];
+    console.log(data.name);
+    console.log(req.body.name);
+    if (data.name == req.body.name) {
+      user = data;
+    } else {
+      user = null;
+    }
+  }
+  //   console.log(user);
   if (user == null) {
     return res.status(400).send('Cannot find user');
   }
   try {
     if (await bcrypt.compare(req.body.password, user.password)) {
-      res.send('Success');
+      res.send(user.type);
     } else {
       res.send('Not Allowed');
     }
