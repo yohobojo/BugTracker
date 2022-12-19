@@ -8,6 +8,9 @@ $('#userBtn').click(function (e) {
   e.preventDefault();
   window.location = 'userHome.html';
 });
+
+var DBBugs;
+
 if (document.getElementById('loginForm')) {
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -89,19 +92,62 @@ async function getData() {
     .then((responseJson) => {
       return responseJson;
     });
+  DBBugs = response;
   for (let i = 0; i < response.length; i++) {
     const data = response[i];
     bugTable.innerHTML +=
-      '<tr data-bs-toggle="collapse" data-bs-target="#row1" aria-expanded="false" aria-controls="collapseExample"><td>' +
+      '<tr data-bs-toggle="collapse" data-bs-target="#row' +
+      data.id +
+      '" aria-expanded="false" aria-controls="collapseExample"><td>' +
       data.id +
       '</td><td>' +
       data.name +
       '</td><td>' +
       data.description +
-      '</td></tr><tr><td class="collapse text-center align-middle" id="row1" colspan="1"><button type="button" class="btn btn-primary" id="testBtn">Done</button></td><td class="collapse" id="row1" colspan="2"><div class="card card-body"><p>Some placeholder content for the collapse component. This panel is hidden by default but revealed when the user activates the relevant trigger.</p></div></td></tr>';
+      '</td></tr><tr><td class="collapse text-center align-middle" id="row' +
+      data.id +
+      '" colspan="1"><button type="button" class="btn btn-primary" id="testBtn">Fixed</button></td><td class="collapse" id="row' +
+      data.id +
+      '" colspan="2"><div class="card card-body"><p>' +
+      data.description_ext +
+      '</p></div></td></tr>';
   }
 }
+document.getElementById('newBugForm').addEventListener('submit', async (e) => {
+  var newBugID = DBBugs.length + 1;
+  var newBugName = e.target[0].value;
+  var newBugDescription = e.target[1].value;
+  var newBugDescriptionExt = e.target[2].value;
+  var newBugDone = 'false';
 
+  var bug = {
+    id: newBugID,
+    name: newBugName,
+    description: newBugDescription,
+    descriptionExt: newBugDescriptionExt,
+    done: newBugType,
+  };
+
+  const url = 'http://localhost:5500/newBug';
+  const response = await fetch(url, {
+    method: 'POST', // or 'PUT'
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(bug),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      return error;
+    });
+  window.location.reload();
+});
+// const username = e.target[0].value;
+// const password = e.target[1].value;
+// loginData = { name: username, password: password };
 // const testBtn = document.getElementById('testBtn');
 // testBtn.addEventListener('click', async (e) => {
 //   console.log('button clicked');

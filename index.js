@@ -34,7 +34,7 @@ connection.query('SELECT * FROM users', (err, result) => {
 
 app.get('/bugs', (req, res) => {
   //   res.send(courses);
-  connection.query('SELECT * FROM bugs', (err, result) => {
+  connection.query('SELECT * FROM bugs WHERE done = "false"', (err, result) => {
     res.send(result);
   });
 });
@@ -63,7 +63,7 @@ app.post('/newUser', async (req, res) => {
         user.name +
         '","' +
         user.password +
-        '","user");'
+        '","admin");'
     );
     res.status(201).send('code 201');
   } catch (error) {
@@ -100,13 +100,23 @@ app.post('/users/login', async (req, res) => {
   }
 });
 
-app.post('/api/courses', (req, res) => {
-  const course = {
-    id: courses.length + 1,
-    name: req.body.name,
-  };
-  courses.push(course);
-  res.send(course);
+app.post('/newBug', async (req, res) => {
+  console.log(req.body);
+
+  connection.query(
+    'INSERT INTO bugs VALUES ("' +
+      req.body.id +
+      '","' +
+      req.body.name +
+      '","' +
+      req.body.description +
+      '","' +
+      req.body.done +
+      '","' +
+      req.body.descriptionExt +
+      '");'
+  );
+  //   res.send(course);
 });
 
 app.get('/api/courses/:id', (req, res) => {
