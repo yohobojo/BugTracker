@@ -33,21 +33,39 @@ connection.query('SELECT * FROM users', (err, result) => {
 });
 
 app.get('/bugs', (req, res) => {
-  //   res.send(courses);
-  connection.query('SELECT * FROM bugs WHERE done = "false"', (err, result) => {
+  connection.query(
+    'SELECT * FROM bugs WHERE done = "false" AND approved = "true"',
+    (err, result) => {
+      res.send(result);
+    }
+  );
+});
+
+app.get('/newBugs', (req, res) => {
+  connection.query(
+    'SELECT * FROM bugs WHERE approved = "false";',
+    (err, result) => {
+      console.log(result);
+      res.send(result);
+    }
+  );
+});
+
+app.get('/doneBugs', (req, res) => {
+  connection.query('SELECT * FROM bugs WHERE done = "true";', (err, result) => {
     res.send(result);
   });
 });
 
 app.get('/userHome', (req, res) => {
-  connection.query('SELECT * FROM bugs', (err, result) => {
+  connection.query('SELECT * FROM bugs;', (err, result) => {
     res.send(result);
   });
 });
 
 app.get('/users', (req, res) => {
   console.log('here');
-  connection.query('SELECT name FROM users', (err, result) => {
+  connection.query('SELECT name FROM users;', (err, result) => {
     res.send(result);
     // users.push(result);
   });
@@ -81,6 +99,7 @@ app.post('/users/login', async (req, res) => {
     console.log(req.body.name);
     if (data.name == req.body.name) {
       user = data;
+      break;
     } else {
       user = null;
     }
@@ -114,33 +133,14 @@ app.post('/newBug', async (req, res) => {
       req.body.done +
       '","' +
       req.body.descriptionExt +
+      '","' +
+      req.body.approved +
       '");'
   );
-  //   res.send(course);
 });
-
-app.get('/api/courses/:id', (req, res) => {
-  const course = courses.find((c) => c.id === parseInt(req.params.id));
-  if (!course)
-    return res.status(404).send('The course with the given ID was not found.');
-  res.send(course);
-});
-
-app.put('/api/courses/:id', (req, res) => {
-  const course = courses.find((c) => c.id === parseInt(req.params.id));
-  if (!course)
-    return res.status(404).send('The course with the given ID was not found.');
-  //implement validation later
-  course.name = req.body.name;
-  res.send(course);
-});
-
-app.delete('/api/courses/:id', (req, res) => {
-  const course = courses.find((c) => c.id === parseInt(req.params.id));
-  if (!course)
-    return res.status(404).send('The course with the given ID was not found.');
-
-  const index = courses.indexOf(course);
-  courses.splice(index, 1);
-  res.send(course);
+app.put('/approveBug', async (req, res) => {
+  console.log(req);
+  connection.query(
+    'UPDATE bugs SET approved = "true" WHERE id = ' + req.body.id + ';'
+  );
 });

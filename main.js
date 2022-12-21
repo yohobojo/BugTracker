@@ -83,7 +83,7 @@ if (document.getElementById('loginForm')) {
   }
 }
 
-async function getData() {
+async function getUserData() {
   console.log('hello world');
   const bugTable = document.getElementById('bugTable');
   const url = 'http://localhost:5500/bugs';
@@ -113,19 +113,97 @@ async function getData() {
       '</p></div></td></tr>';
   }
 }
+async function getAdminData() {
+  console.log('hello world');
+  const newBugTable = document.getElementById('newBugTable');
+  const doneBugTable = document.getElementById('doneBugTable');
+  const newUrl = 'http://localhost:5500/newBugs';
+  const doneUrl = 'http://localhost:5500/doneBugs';
+  const newResponse = await fetch(newUrl, { method: 'GET', mode: 'cors' })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      return responseJson;
+    });
+  for (let i = 0; i < newResponse.length; i++) {
+    const data = newResponse[i];
+    newBugTable.innerHTML +=
+      '<tr data-bs-toggle="collapse" data-bs-target="#row' +
+      data.id +
+      '" aria-expanded="false" aria-controls="collapseExample"><td>' +
+      data.id +
+      '</td><td>' +
+      data.name +
+      '</td><td>' +
+      data.description +
+      '</td></tr><tr><td class="collapse text-center align-middle" id="row' +
+      data.id +
+      '" colspan="1"><button type="button" class="btn btn-primary" id="approveBtn">Approve</button><button type="button" class="btn btn-primary" id="disapproveBtn">Disapprove</button></td><td class="collapse" id="row' +
+      data.id +
+      '" colspan="2"><div class="card card-body"><p>' +
+      data.description_ext +
+      '</p></div></td></tr>';
+  }
+  const doneResponse = await fetch(doneUrl, { method: 'GET', mode: 'cors' })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      return responseJson;
+    });
+  for (let i = 0; i < doneResponse.length; i++) {
+    const data = doneResponse[i];
+    doneBugTable.innerHTML +=
+      '<tr data-bs-toggle="collapse" data-bs-target="#row' +
+      data.id +
+      '" aria-expanded="false" aria-controls="collapseExample"><td>' +
+      data.id +
+      '</td><td>' +
+      data.name +
+      '</td><td>' +
+      data.description +
+      '</td></tr><tr><td class="collapse text-center align-middle" id="row' +
+      data.id +
+      '" colspan="1"><button type="button" class="btn btn-primary" id="testBtn">Fixed</button></td><td class="collapse" id="row' +
+      data.id +
+      '" colspan="2"><div class="card card-body"><p>' +
+      data.description_ext +
+      '</p></div></td></tr>';
+  }
+  const approveBtn = document.getElementById('approveBtn');
+  approveBtn.addEventListener('click', async (e) => {
+    var bugID = parseInt(
+      e.target.offsetParent.offsetParent.childNodes[3].children[0].children[0]
+        .innerHTML
+    );
+    console.log(bugID);
+    var bug = {
+      id: bugID,
+      approved: 'true',
+    };
+    const url = 'http://localhost:5500/approveBug';
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bug),
+    });
+    window.location.reload();
+  });
+}
 document.getElementById('newBugForm').addEventListener('submit', async (e) => {
   var newBugID = DBBugs.length + 1;
   var newBugName = e.target[0].value;
   var newBugDescription = e.target[1].value;
   var newBugDescriptionExt = e.target[2].value;
   var newBugDone = 'false';
+  var newBugApproved = 'false';
 
   var bug = {
     id: newBugID,
     name: newBugName,
     description: newBugDescription,
     descriptionExt: newBugDescriptionExt,
-    done: newBugType,
+    done: newBugDone,
+    approved: newBugApproved,
   };
 
   const url = 'http://localhost:5500/newBug';
@@ -145,6 +223,7 @@ document.getElementById('newBugForm').addEventListener('submit', async (e) => {
     });
   window.location.reload();
 });
+
 // const username = e.target[0].value;
 // const password = e.target[1].value;
 // loginData = { name: username, password: password };
